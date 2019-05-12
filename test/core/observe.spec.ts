@@ -18,7 +18,7 @@ test('observe a object', () => {
     expect(hasOwn(obj.b.test, '__ob__')).toBe(true);
 });
 
-test('watch', async ()=>{
+test('watch update property', async ()=>{
     const vm = new ViewModel({
         data: {
             text: 'hello world!'
@@ -33,7 +33,6 @@ test('watch', async ()=>{
     function watchChanged(){
         return new Promise((resolve)=>{            
             vm.$watch('text',(value : any, oldValue : any)=>{
-                console.log(value, oldValue);
                 resolve({
                     value,
                     oldValue
@@ -41,6 +40,60 @@ test('watch', async ()=>{
             });
             
             (vm as any)['text'] = 'text changed!';
+        })
+    }
+})
+
+test('watch add property', async ()=>{
+    const vm = new ViewModel({
+        data: {
+            message : {}
+        }
+    });
+
+    const result = await watchChanged() as any;
+    
+    expect(result.oldValue).toBe(undefined);
+    expect(result.value).toBe('hello!');
+
+    function watchChanged(){
+        return new Promise((resolve)=>{            
+            vm.$watch('message.a',(value : any, oldValue : any)=>{
+                resolve({
+                    value,
+                    oldValue
+                })
+            });
+            
+            (vm as any).message.a = 'hello!';
+        })
+    }
+})
+
+test('watch delete property', async ()=>{
+    const vm = new ViewModel({
+        data: {
+            message : {
+                a : 'hello!'
+            }
+        }
+    });
+
+    const result = await watchChanged() as any;
+    
+    expect(result.oldValue).toBe('hello!');
+    expect(result.value).toBe(undefined);
+
+    function watchChanged(){
+        return new Promise((resolve)=>{            
+            vm.$watch('message.a',(value : any, oldValue : any)=>{
+                resolve({
+                    value,
+                    oldValue
+                })
+            });
+            
+            delete (vm as any).message.a;
         })
     }
 })

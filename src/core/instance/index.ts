@@ -14,7 +14,7 @@ export class ViewModel{
     constructor(options: ViewModelOption){
         this._uid = _vmUid++;
         this.$options = options;
-        initState(this);
+        return initState(this);
     }
 
     public $watch(expOrFn : string | Function, cb : Function){

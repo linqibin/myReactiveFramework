@@ -51,6 +51,11 @@ export function defineReactive(obj: any ): any{
             const result = Reflect.set(obj, prop, value, receiver);
             dep.notify();
             return result;
+        },
+        deleteProperty: function(target: any, p: string | number | symbol){
+            const result = Reflect.deleteProperty(target, p);;
+            dep.notify();
+            return result;
         }
     });
 }
