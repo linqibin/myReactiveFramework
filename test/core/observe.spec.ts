@@ -97,3 +97,28 @@ test('watch delete property', async ()=>{
         })
     }
 })
+
+
+test('watch array push', async ()=>{
+    const vm = new ViewModel({
+        data: {
+            message: {
+                a : [1,2,3]
+            },
+        }
+    });
+
+    const result = await watchChanged() as any;
+    
+    expect(result).toEqual([1,2,3,4]);
+
+    function watchChanged(){
+        return new Promise((resolve)=>{            
+            vm.$watch('message.a',(value : any, oldValue : any)=>{
+                resolve(value);
+            });
+            
+            (vm as any).message.a.push(4);
+        })
+    }
+})
