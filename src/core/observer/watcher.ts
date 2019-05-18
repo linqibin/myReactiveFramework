@@ -9,8 +9,13 @@ export class Watcher {
     public id : number;
     public vm : ViewModel;
     public cb : Function;
-    public deps : Array<Dep> = [];    
+
+    public deps : Array<Dep> = [];      
+    public newDeps: Array<Dep> = [];  
     public depIds = new Set();
+    public newDepIds = new Set();
+
+    public expression : string = '';
 
     private getter: Function;
     private value: any;
@@ -23,6 +28,7 @@ export class Watcher {
         this.id = _watcherUid++;
         this.vm = vm;
         this.cb = cb;
+        this.expression = expOrFn.toString();;
         if(typeof expOrFn === 'function'){
             this.getter = expOrFn;
         }else{
@@ -36,6 +42,7 @@ export class Watcher {
         Dep.target = this;
         const value = this.getter.call(this.vm, this.vm);
         Dep.target = undefined;
+        this.cleanupDeps();
         return value;
     }
 
@@ -47,10 +54,35 @@ export class Watcher {
 
     public addDep(dep : Dep){
         const id = dep.id;
-        if(!this.depIds.has(id)){//不重复添加依赖
-            this.deps.push(dep);
-            this.depIds.add(id);
-            dep.addSub(this);
+        if(!this.newDepIds.has(id)){//不重复添加依赖
+            this.newDepIds.add(id)
+            this.newDeps.push(dep);
+            if(!this.depIds.has(id)){
+                dep.addSub(this);
+            }
         }
+    }
+
+    /**
+     * 清除已经不需要的依赖
+     */
+    public cleanupDeps () {
+        for(let i = this.deps.length - 1; i > 0; i--){
+            const dep = this.deps[i];
+            if (!this.newDepIds.has(dep.id)) {
+              dep.removeSub(this)
+            }
+        }
+
+        //将新增的dep记到deps里，并重置newDepIds及newDeps
+        const tmp1 = this.depIds;
+        this.depIds = this.newDepIds;
+        this.newDepIds = tmp1;
+        this.newDepIds.clear();
+
+        const tmp2 = this.deps;
+        this.deps = this.newDeps;
+        this.newDeps = tmp2;
+        this.newDeps.length = 0;
     }
 }

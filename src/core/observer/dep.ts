@@ -32,7 +32,6 @@ export class Dep {
 
     public depend(){
         if(Dep.target){
-            //this.addSub(Dep.target);
             Dep.target.addDep(this);
         }
     }
